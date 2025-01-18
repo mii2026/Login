@@ -1,0 +1,36 @@
+name: Java CI with Gradle
+
+on:
+  pull_request:
+    branches:
+      - "develop"
+
+permissions:
+  checks: write
+  pull-requests: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Gradle Permission
+        run: chmod +x ./gradlew
+
+      - name: Run build in a subdirectory
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          arguments: 'build'
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          junit_files: 'build/test-results/test/TEST-*.xml'
