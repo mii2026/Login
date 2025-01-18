@@ -1,7 +1,7 @@
 package com.example.login.infrastructure.security;
 
 import com.example.login.common.exception.ApplicationException;
-import com.example.login.common.exception.AuthErrorCase;
+import com.example.login.common.errors.AuthErrorCase;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

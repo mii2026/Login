@@ -2,6 +2,22 @@ spring:
   application:
     name: login
 
+  datasource:
+    url: ${USER_POSTGRES_URL}
+    username: ${USER_POSTGRES_USERNAME}
+    password: ${USER_POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+        use_sql_comments: true
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+
 jwt:
   accessToken:
     secret: ${JWT_ACCESS_SECRET_KEY}

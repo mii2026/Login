@@ -1,4 +1,4 @@
-package com.example.login.common.exception;
+package com.example.login.common.errors;
 
 import org.springframework.http.HttpStatus;
 
