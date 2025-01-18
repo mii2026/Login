@@ -3,6 +3,7 @@ package com.example.login.common.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -20,6 +21,7 @@ public class GlobalExceptionHandler {
         String message = e.getExceptionCase().getMessage();
         return ResponseEntity
                 .status(e.getExceptionCase().getHttpStatus())
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(message);
     }
 
@@ -28,6 +30,7 @@ public class GlobalExceptionHandler {
         String message = bindingResult.getAllErrors().get(0).getDefaultMessage();
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
+                .contentType(MediaType.APPLICATION_JSON)
                 .body(message);
     }
 
