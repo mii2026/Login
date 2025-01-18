@@ -21,6 +21,12 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: make application-test.yml
+        run: touch ./src/main/resources/application-test.yml
+
+      - name: get application-test.yml values
+        run: echo "${{ secrets.APPLICATION_TEST_YML }}" > ./src/main/resources/application-test.yml
+
       - name: Gradle Permission
         run: chmod +x ./gradlew
 
