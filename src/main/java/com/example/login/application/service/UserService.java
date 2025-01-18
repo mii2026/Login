@@ -16,48 +16,54 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
-    @Service
-    @RequiredArgsConstructor
-    public class UserService {
+@Service
+@RequiredArgsConstructor
+public class UserService {
 
-        private final UserRepository userRepository;
-        private final PasswordEncoder passwordEncoder;
-        private final JwtTokenizer jwtTokenizer;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtTokenizer jwtTokenizer;
 
-        public UserResponse createUser(SignUpRequest request) {
-            if(userRepository.existsByUsername(request.username())){
-                throw new ApplicationException(UserErrorCase.DUPLICATED_USER);
-            }
-
-            String encodedPassword = passwordEncoder.encode(request.password());
-
-            User user = User.of(request, encodedPassword, Set.of(Authority.ROLE_USER));
-            userRepository.save(user);
-
-            return UserResponse.of(user);
+    public UserResponse createUser(SignUpRequest request) {
+        if(userRepository.existsByUsername(request.username())){
+            throw new ApplicationException(UserErrorCase.DUPLICATED_USER);
         }
 
-        @Transactional
-        public TokenDto login(LoginRequest request) {
-            User user = userRepository.findByUsername(request.username())
-                    .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
+        String encodedPassword = passwordEncoder.encode(request.password());
 
-            if(!passwordEncoder.matches(request.password(), user.getPassword())){
-                throw new ApplicationException(UserErrorCase.WRONG_PASSWORD);
-            }
+        User user = User.of(request, encodedPassword, Set.of(Authority.ROLE_USER));
+        userRepository.save(user);
 
-            String subject = user.getId().toString();
-            Map<String, Object> claims = Map.of("roles", user.getAuthorities());
-
-            String accessToken = jwtTokenizer.createAccessToken(subject, claims);
-            String refreshToken = jwtTokenizer.createRefreshToken(subject);
-
-            user.updateRefreshToken(refreshToken);
-            LoginResponse loginResponse = LoginResponse.of(accessToken);
-
-            return new TokenDto(refreshToken, jwtTokenizer.getRefreshTokenExpiration(), loginResponse);
-        }
+        return UserResponse.of(user);
     }
+
+    @Transactional
+    public TokenDto login(LoginRequest request) {
+        User user = userRepository.findByUsername(request.username())
+                .orElseThrow(() -> new ApplicationException(UserErrorCase.USER_NOT_FOUND));
+
+        if(!passwordEncoder.matches(request.password(), user.getPassword())){
+            throw new ApplicationException(UserErrorCase.WRONG_PASSWORD);
+        }
+
+        String subject = user.getId().toString();
+        Map<String, Object> claims = Map.of(
+                "roles", user.getAuthorities().stream()
+                                .map(Authority::name)
+                                .collect(Collectors.joining(","))
+        );
+
+        String accessToken = jwtTokenizer.createAccessToken(subject, claims);
+        String refreshToken = jwtTokenizer.createRefreshToken(subject);
+
+        user.updateRefreshToken(refreshToken);
+        LoginResponse loginResponse = LoginResponse.of(accessToken);
+
+        return new TokenDto(refreshToken, jwtTokenizer.getRefreshTokenExpiration(), loginResponse);
+    }
+}

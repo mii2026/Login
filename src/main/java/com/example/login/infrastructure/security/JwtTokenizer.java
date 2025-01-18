@@ -1,47 +1,52 @@
 package com.example.login.infrastructure.security;
 
-import com.example.login.common.exception.ApplicationException;
 import com.example.login.common.errors.AuthErrorCase;
+import com.example.login.common.exception.ApplicationException;
+import com.example.login.domain.user.enums.Authority;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.util.Base64;
-import java.util.Date;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class JwtTokenizer {
 
-    @Value("${jwt.accessToken.expiration}")
-    private long accessTokenExpiration;
+    @Getter
+    private final long refreshTokenExpiration;
+    private final long accessTokenExpiration;
 
-    @Value("${jwt.refreshToken.expiration}")
-    private long refreshTokenExpiration;
-
-    private Key accessKey;
-    private Key refreshKey;
+    private final Key accessKey;
+    private final Key refreshKey;
 
     public JwtTokenizer(
             @Value("${jwt.accessToken.secret}") String accessSecret,
-            @Value("${jwt.refreshToken.secret}") String refreshSecret
+            @Value("${jwt.refreshToken.secret}") String refreshSecret,
+            @Value("${jwt.accessToken.expiration}") long accessTokenExpiration,
+            @Value("${jwt.refreshToken.expiration}") long refreshTokenExpiration
     ) {
         byte[] bytes = Base64.getDecoder().decode(accessSecret);
         this.accessKey = Keys.hmacShaKeyFor(bytes);
 
         bytes = Base64.getDecoder().decode(refreshSecret);
         this.refreshKey = Keys.hmacShaKeyFor(bytes);
+
+        this.accessTokenExpiration = accessTokenExpiration;
+        this.refreshTokenExpiration = refreshTokenExpiration;
     }
 
     public String createAccessToken(String subject, Map<String, Object> claims) {
         Date now = new Date();
         return Jwts.builder()
-                .setSubject(subject)
                 .setClaims(claims)
+                .setSubject(subject)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + accessTokenExpiration))
                 .signWith(accessKey, SignatureAlgorithm.HS256)
@@ -68,7 +73,7 @@ public class JwtTokenizer {
 
     private void validateToken(String token, Key key) {
         try {
-            Jwts.parserBuilder().setSigningKey(refreshKey).build().parseClaimsJws(token);
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
         } catch (ExpiredJwtException e) {
             throw new ApplicationException(AuthErrorCase.EXPIRED_TOKEN);
         } catch (Exception e) {
@@ -76,8 +81,32 @@ public class JwtTokenizer {
         }
     }
 
-    public long getRefreshTokenExpiration() {
-        return refreshTokenExpiration;
+    public UUID getUserIdFromAccessToken(String token){
+        try {
+            String userId = Jwts.parserBuilder()
+                    .setSigningKey(accessKey)
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody()
+                    .getSubject();
+
+            return UUID.fromString(userId);
+        } catch (IllegalArgumentException e) {
+            throw new ApplicationException(AuthErrorCase.INVALID_TOKEN);
+        }
+    }
+
+    public Set<Authority> getAuthoritiesFromAccessToken(String token) {
+        String roles = Jwts.parserBuilder()
+                .setSigningKey(accessKey)
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("roles", String.class);
+
+        return Arrays.stream(roles.split(","))
+                .map(Authority::getAuthority)
+                .collect(Collectors.toSet());
     }
 
 }
