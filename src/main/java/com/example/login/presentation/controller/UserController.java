@@ -6,6 +6,7 @@ import com.example.login.application.dto.UserResponse;
 import com.example.login.application.service.UserService;
 import com.example.login.presentation.dto.LoginRequest;
 import com.example.login.presentation.dto.SignUpRequest;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -22,6 +23,7 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "회원 가입")
     @PostMapping("/signup")
     public ResponseEntity<UserResponse> createUser(@RequestBody @Valid SignUpRequest request) {
         return ResponseEntity
@@ -29,6 +31,7 @@ public class UserController {
                 .body(userService.createUser(request));
     }
 
+    @Operation(summary = "로그인")
     @PostMapping("/sign")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest request,
                                                HttpServletResponse response) {
