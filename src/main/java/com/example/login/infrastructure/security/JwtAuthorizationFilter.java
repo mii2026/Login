@@ -1,7 +1,6 @@
-package com.example.login.infrastructure.filter;
+package com.example.login.infrastructure.security;
 
 import com.example.login.domain.user.enums.Authority;
-import com.example.login.infrastructure.security.JwtTokenizer;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

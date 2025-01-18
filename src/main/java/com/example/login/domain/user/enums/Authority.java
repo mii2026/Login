@@ -1,6 +1,6 @@
 package com.example.login.domain.user.enums;
 
-import com.example.login.common.errors.AuthErrorCase;
+import com.example.login.common.exception.AuthErrorCase;
 import com.example.login.common.exception.ApplicationException;
 
 public enum Authority {

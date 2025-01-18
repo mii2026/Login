@@ -1,6 +1,6 @@
 package com.example.login.infrastructure.config;
 
-import com.example.login.infrastructure.filter.JwtAuthorizationFilter;
+import com.example.login.infrastructure.security.JwtAuthorizationFilter;
 import com.example.login.infrastructure.security.CustomAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
