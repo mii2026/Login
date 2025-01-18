@@ -108,7 +108,7 @@ class UserServiceTest {
 
         doReturn("accessToken")
                 .when(jwtTokenizer)
-                .createAccessToken("8051ea56-2140-40ff-8be5-107a7723b54e", Map.of("roles", Set.of(Authority.ROLE_USER)));
+                .createAccessToken("8051ea56-2140-40ff-8be5-107a7723b54e", Map.of("roles", "ROLE_USER"));
 
         doReturn("refreshToken")
                 .when(jwtTokenizer)
