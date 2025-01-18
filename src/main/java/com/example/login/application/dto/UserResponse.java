@@ -5,6 +5,7 @@ import lombok.AccessLevel;
 import lombok.Builder;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Builder(access = AccessLevel.PRIVATE)
 public record UserResponse(
@@ -20,7 +21,7 @@ public record UserResponse(
                 .authorities(
                         user.getAuthorities().stream()
                                 .map(AuthorityDto::of)
-                                .toList()
+                                .collect(Collectors.toList())
                 )
                 .build();
     }
