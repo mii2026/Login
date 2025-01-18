@@ -1,7 +1,7 @@
 package com.example.login.infrastructure.security;
 
 import com.example.login.common.exception.ApplicationException;
-import com.example.login.common.exception.AuthErrorCase;
+import com.example.login.common.errors.AuthErrorCase;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static java.lang.Thread.sleep;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.*;

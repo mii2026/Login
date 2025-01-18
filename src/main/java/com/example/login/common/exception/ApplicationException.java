@@ -1,5 +1,6 @@
 package com.example.login.common.exception;
 
+import com.example.login.common.errors.ErrorCase;
 import lombok.Getter;
 
 @Getter
