@@ -76,4 +76,8 @@ public class JwtTokenizer {
         }
     }
 
+    public long getRefreshTokenExpiration() {
+        return refreshTokenExpiration;
+    }
+
 }

@@ -21,6 +21,7 @@ public class User {
     private String username;
     private String password;
     private String nickname;
+    private String refreshToken;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
@@ -33,5 +34,9 @@ public class User {
                 .nickname(request.nickname())
                 .authorities(authorities)
                 .build();
+    }
+
+    public void updateRefreshToken(String refreshToken) {
+        this.refreshToken = refreshToken;
     }
 }
