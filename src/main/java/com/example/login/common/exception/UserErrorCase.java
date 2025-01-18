@@ -1,4 +1,4 @@
-package com.example.login.common.errors;
+package com.example.login.common.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

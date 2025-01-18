@@ -5,7 +5,7 @@ import com.example.login.application.dto.LoginResponse;
 import com.example.login.application.dto.TokenDto;
 import com.example.login.application.dto.UserResponse;
 import com.example.login.application.service.UserService;
-import com.example.login.common.errors.UserErrorCase;
+import com.example.login.common.exception.UserErrorCase;
 import com.example.login.common.exception.ApplicationException;
 import com.example.login.common.exception.GlobalExceptionHandler;
 import com.example.login.domain.user.enums.Authority;
