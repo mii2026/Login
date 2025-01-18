@@ -1,12 +1,15 @@
 package com.example.login.presentation.controller;
 
 import com.example.login.application.dto.AuthorityDto;
+import com.example.login.application.dto.LoginResponse;
+import com.example.login.application.dto.TokenDto;
 import com.example.login.application.dto.UserResponse;
 import com.example.login.application.service.UserService;
 import com.example.login.common.errors.UserErrorCase;
 import com.example.login.common.exception.ApplicationException;
 import com.example.login.common.exception.GlobalExceptionHandler;
 import com.example.login.domain.user.enums.Authority;
+import com.example.login.presentation.dto.LoginRequest;
 import com.example.login.presentation.dto.SignUpRequest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -59,10 +62,9 @@ class UserControllerTest {
                 List.of(AuthorityDto.of(Authority.ROLE_USER))
         );
 
-        // When
         doReturn(response)
                 .when(userService)
-                .createUser(any(SignUpRequest.class));
+                .createUser(request);
 
         // Then
         mockMvc.perform(post("/signup")
@@ -76,7 +78,7 @@ class UserControllerTest {
 
     @Test
     @DisplayName("회원가입 실패 테스트 - 사용자 이름 없음")
-    public void noUserNameTest() throws Exception {
+    public void signUpUserNameBlankTest() throws Exception {
         // Given
         SignUpRequest request = new SignUpRequest("", "12341234", "Mentos");
 
@@ -94,7 +96,6 @@ class UserControllerTest {
         // Given
         SignUpRequest request = new SignUpRequest("JIN HO", "12341234", "Mentos");
 
-        // When
         doThrow(new ApplicationException(UserErrorCase.DUPLICATED_USER))
                 .when(userService)
                 .createUser(any(SignUpRequest.class));
@@ -105,6 +106,78 @@ class UserControllerTest {
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("이미 존재하는 유저 이름입니다."));
+    }
+
+    @Test
+    @DisplayName("로그인 성공 테스트")
+    public void loginTest() throws Exception {
+        // Given
+        LoginRequest request = new LoginRequest("JIN HO", "12341234");
+        LoginResponse response = new LoginResponse("accessToken");
+        TokenDto tokenDto = new TokenDto("refreshToken", 100000L, response);
+
+        doReturn(tokenDto)
+                .when(userService)
+                .login(request);
+
+        // Then
+        mockMvc.perform(post("/sign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("token").value("accessToken"))
+                .andExpect(cookie().value("refresh_token", "refreshToken"));
+
+    }
+
+    @Test
+    @DisplayName("로그인 실패 테스트 - 사용자 이름 없음")
+    public void loginUserNameBlankTest() throws Exception {
+        // Given
+        LoginRequest request = new LoginRequest("", "1234");
+
+        // Then
+        mockMvc.perform(post("/sign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("사용자명은 공백일 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("로그인 실패 테스트 - 존재하지 않는 사용자")
+    public void loginUserNotFoundTest() throws Exception {
+        // Given
+        LoginRequest request = new LoginRequest("JIN HO", "12341234");
+
+        doThrow(new ApplicationException(UserErrorCase.USER_NOT_FOUND))
+                .when(userService)
+                .login(request);
+
+        // Then
+        mockMvc.perform(post("/sign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string("존재하지 않는 사용자입니다."));
+    }
+
+    @Test
+    @DisplayName("로그인 실패 테스트 - 비밀번호 불일치")
+    public void wrongPasswordTest() throws Exception {
+        // Given
+        LoginRequest request = new LoginRequest("JIN HO", "123412345");
+
+        doThrow(new ApplicationException(UserErrorCase.WRONG_PASSWORD))
+                .when(userService)
+                .login(request);
+
+        // Then
+        mockMvc.perform(post("/sign")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string("비밀번호가 올바르지 않습니다."));
     }
 
 }
