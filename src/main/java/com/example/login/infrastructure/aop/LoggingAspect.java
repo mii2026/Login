@@ -1,4 +1,4 @@
-package com.example.login.application.aop;
+package com.example.login.infrastructure.aop;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.After;
